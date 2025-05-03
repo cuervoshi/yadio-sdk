@@ -4,10 +4,10 @@ A lightweight SDK for interacting with the [Yadio](https://yadio.io) public API,
 
 ## Features
 
-- Fetch exchange rates with any base currency
-- Convert amounts between any two currencies
-- View historical and comparison data
-- Use an in-memory converter that caches rates from USD for efficient, offline-friendly conversions
+- Fetch exchange rates using any base currency
+- Convert amounts between any two currencies using cached data
+- View historical, market and comparison data
+- Use an in-memory converter with smart refresh logic
 
 ---
 
@@ -47,21 +47,22 @@ const api = new YadioAPI()
 
 ## YadioConverter
 
-A smart converter that uses USD as a pivot currency and caches values in memory.
+A currency converter that uses cached exchange rates and lazy refresh logic based on the last access time.
 
 ### Initialization
 
 ```ts
 import { YadioConverter } from 'yadio-sdk'
 
-const converter = new YadioConverter()
+// Base currency is optional (default is 'USD'), refreshInterval is optional (default is 60_000 ms)
+const converter = new YadioConverter('EUR', 120_000) // base currency: EUR, refresh every 2 minutes
 ```
 
 ### Features
 
-- Automatically fetches rates from `/exrates/USD`
-- Converts between any two currencies using cached rates
-- Refreshes rates only when needed (default: every 60s)
+- Fetches rates from `/exrates/{base}`
+- Automatically refreshes when cache expires
+- Uses base currency (e.g., USD, EUR) to convert between any two others
 
 ### Usage
 
@@ -69,6 +70,6 @@ const converter = new YadioConverter()
 // Convert 100 ARS to EUR
 const result = await converter.convertCurrency(100, 'ARS', 'EUR')
 
-// Get a cached rate
-const rate = converter.getCachedRate('BTC')
+// Get all cached rates
+const rates = converter.getRates()
 ```
