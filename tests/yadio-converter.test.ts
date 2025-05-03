@@ -12,7 +12,9 @@ describe('YadioConverter', () => {
     const usdToEur = await converter.convertCurrency(100, 'USD', 'EUR')
     const eurToUsd = await converter.convertCurrency(100, 'EUR', 'USD')
 
-    const eurRate = converter.getCachedRate('EUR')!
+    const rates = converter.getRates()
+    const eurRate = rates['EUR']!
+
     const expectedUsdToEur = 100 * eurRate
     const expectedEurToUsd = 100 / eurRate
 

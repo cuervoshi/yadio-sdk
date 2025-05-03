@@ -5,7 +5,7 @@ interface CachedRates {
 }
 
 /**
- * A currency converter that uses Yadio's exchange rates with USD as the base currency.
+ * A currency converter that uses Yadio's exchange rates with a configurable base currency.
  * Rates are fetched on demand and stored in memory for offline conversions.
  */
 export class YadioConverter {
@@ -14,8 +14,9 @@ export class YadioConverter {
   private pendingFetch?: Promise<void>
 
   constructor(
-    private api: YadioAPI = new YadioAPI(),
+    private baseCurrency: string = 'USD',
     private refreshIntervalMs: number = 60_000,
+    private api: YadioAPI = new YadioAPI(),
   ) {
     this.ensureRatesLoaded()
   }
@@ -26,9 +27,7 @@ export class YadioConverter {
   private async ensureRatesLoaded(): Promise<void> {
     const now = Date.now()
 
-    if (now - this.lastUpdated < this.refreshIntervalMs) {
-      return
-    }
+    if (now - this.lastUpdated < this.refreshIntervalMs) return
 
     if (!this.pendingFetch) {
       this.pendingFetch = this.fetchRates()
@@ -38,22 +37,22 @@ export class YadioConverter {
   }
 
   /**
-   * Fetches and caches exchange rates from Yadio with USD as the base.
+   * Fetches and caches exchange rates from Yadio with the specified base currency.
    */
   private async fetchRates(): Promise<void> {
     try {
-      const result = await this.api.getExchangeRates('USD')
-      const usdRates = result?.USD
+      const result = await this.api.getExchangeRates(this.baseCurrency)
+      const rates = result?.[this.baseCurrency]
 
-      if (!usdRates || typeof usdRates !== 'object') return
+      if (!rates || typeof rates !== 'object') return
 
-      for (const [currency, value] of Object.entries(usdRates)) {
+      for (const [currency, value] of Object.entries(rates)) {
         if (typeof value === 'number') {
           this.rates[currency] = value
         }
       }
 
-      this.rates['USD'] = 1
+      this.rates[this.baseCurrency] = 1
       this.lastUpdated = Date.now()
     } finally {
       this.pendingFetch = undefined
@@ -62,7 +61,7 @@ export class YadioConverter {
 
   /**
    * Converts an amount from one currency to another using cached exchange rates.
-   * All conversions are routed through USD.
+   * All conversions are routed through the configured base currency.
    *
    * @param amount - The amount to convert.
    * @param from - The source currency code (e.g., 'ARS', 'EUR').
@@ -79,17 +78,14 @@ export class YadioConverter {
       return NaN
     }
 
-    const usdAmount = amount / fromRate
-    return usdAmount * toRate
+    const baseAmount = amount / fromRate
+    return baseAmount * toRate
   }
 
   /**
-   * Returns the current cached rate for a given currency relative to USD.
-   *
-   * @param currency - The currency code.
-   * @returns The exchange rate or undefined if not available.
+   * Returns the current cached exchange rates relative to the base currency.
    */
-  getCachedRate(currency: string): number | undefined {
-    return this.rates[currency]
+  getRates(): CachedRates {
+    return { ...this.rates }
   }
 }
