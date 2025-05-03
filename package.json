@@ -1,9 +1,17 @@
 {
   "name": "yadio-sdk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
