@@ -1,13 +1,15 @@
 # yadio-sdk
 
-Simple and efficient currency conversion using [Yadio.io](https://yadio.io/) exchange rates.
+A lightweight SDK for interacting with the [Yadio](https://yadio.io) public API, featuring real-time and cached currency exchange functionality.
 
 ## Features
 
-- Periodic caching of exchange rates from USD to all supported currencies.
-- Lightweight converter with offline calculations.
-- Synchronous or asynchronous conversion between currencies.
-- No API key required.
+- Fetch exchange rates with any base currency
+- Convert amounts between any two currencies
+- View historical and comparison data
+- Use an in-memory converter that caches rates from USD for efficient, offline-friendly conversions
+
+---
 
 ## Installation
 
@@ -15,44 +17,58 @@ Simple and efficient currency conversion using [Yadio.io](https://yadio.io/) exc
 npm install yadio-sdk
 ```
 
-## Usage
+---
+
+## YadioAPI
+
+### Initialization
+
+```ts
+import { YadioAPI } from 'yadio-sdk'
+
+const api = new YadioAPI()
+```
+
+### Methods
+
+- `ping(): Promise<string>` — Check if the API is alive.
+- `getExchangeRates(base?: string): Promise<ExchangeRatesResponse>` — Get exchange rates using optional base.
+- `convert(amount, source, target): Promise<ConvertResponse>` — Convert a currency amount.
+- `getRate(quote, base): Promise<CurrencyRateResponse>` — Get the exchange rate between two currencies.
+- `getCurrencies(): Promise<string[]>` — Get all supported currency codes.
+- `getExchanges(): Promise<string[]>` — Get supported exchanges.
+- `getToday(range, currency): Promise<any>` — Get today’s price data for a currency.
+- `getHistory(range, currency): Promise<any>` — Get historical price data.
+- `getComparison(range, currency): Promise<any>` — Compare past and current prices.
+- `getMarketAds(currency, side, limit?): Promise<MarketAd[]>` — Get market ads.
+- `getMarketStats(currency, side): Promise<MarketStats>` — Get stats for market ads.
+
+---
+
+## YadioConverter
+
+A smart converter that uses USD as a pivot currency and caches values in memory.
+
+### Initialization
 
 ```ts
 import { YadioConverter } from 'yadio-sdk'
 
 const converter = new YadioConverter()
-
-await converter.start()
-
-// Synchronous conversion (only works after start)
-const amountInEUR = converter.convertCurrency(100, 'USD', 'EUR')
-
-// Async conversion (waits for rates to be available if not yet ready)
-const amountInBTC = await converter.convertCurrencyAsync(100, 'ARS', 'BTC')
 ```
 
-## API
+### Features
 
-### `new YadioConverter(api?: YadioAPI, refreshIntervalMs?: number)`
+- Automatically fetches rates from `/exrates/USD`
+- Converts between any two currencies using cached rates
+- Refreshes rates only when needed (default: every 60s)
 
-Creates a new converter instance. By default, exchange rates are refreshed every 60 seconds.
+### Usage
 
-### `await converter.start()`
+```ts
+// Convert 100 ARS to EUR
+const result = await converter.convertCurrency(100, 'ARS', 'EUR')
 
-Starts fetching exchange rates from Yadio (`exrates/USD`) and populates the internal cache.
-
-### `converter.stop()`
-
-Stops the refresh polling.
-
-### `converter.convertCurrency(amount, from, to)`
-
-Performs a conversion using cached rates. Returns `NaN` if rates are missing.
-
-### `await converter.convertCurrencyAsync(amount, from, to)`
-
-Same as above, but waits for rates to be available before performing the conversion.
-
-### `converter.getCachedRate(currency)`
-
-Returns the cached rate relative to USD.
+// Get a cached rate
+const rate = converter.getCachedRate('BTC')
+```

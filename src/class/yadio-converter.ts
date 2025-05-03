@@ -6,28 +6,45 @@ interface CachedRates {
 
 /**
  * A currency converter that uses Yadio's exchange rates with USD as the base currency.
- * Rates are fetched periodically and stored in memory for offline conversions.
+ * Rates are fetched on demand and stored in memory for offline conversions.
  */
 export class YadioConverter {
   private rates: CachedRates = {}
-  private intervalId?: NodeJS.Timeout
-  private ready = false
-  private pendingReady?: Promise<void>
+  private lastUpdated = 0
+  private pendingFetch?: Promise<void>
 
   constructor(
     private api: YadioAPI = new YadioAPI(),
     private refreshIntervalMs: number = 60_000,
-  ) {}
+  ) {
+    this.ensureRatesLoaded()
+  }
 
   /**
-   * Starts polling exchange rates from Yadio with USD as the base.
-   * All fetched rates are stored in memory and updated periodically.
+   * Loads exchange rates if they are expired or have never been fetched.
    */
-  async start(): Promise<void> {
-    const fetchRates = async () => {
-      const result = await this.api.getExchangeRates('USD')
+  private async ensureRatesLoaded(): Promise<void> {
+    const now = Date.now()
 
+    if (now - this.lastUpdated < this.refreshIntervalMs) {
+      return
+    }
+
+    if (!this.pendingFetch) {
+      this.pendingFetch = this.fetchRates()
+    }
+
+    await this.pendingFetch
+  }
+
+  /**
+   * Fetches and caches exchange rates from Yadio with USD as the base.
+   */
+  private async fetchRates(): Promise<void> {
+    try {
+      const result = await this.api.getExchangeRates('USD')
       const usdRates = result?.USD
+
       if (!usdRates || typeof usdRates !== 'object') return
 
       for (const [currency, value] of Object.entries(usdRates)) {
@@ -37,21 +54,9 @@ export class YadioConverter {
       }
 
       this.rates['USD'] = 1
-      this.ready = true
-    }
-
-    this.pendingReady = fetchRates()
-    await this.pendingReady
-
-    this.intervalId = setInterval(fetchRates, this.refreshIntervalMs)
-  }
-
-  /**
-   * Stops polling exchange rates.
-   */
-  stop(): void {
-    if (this.intervalId) {
-      clearInterval(this.intervalId)
+      this.lastUpdated = Date.now()
+    } finally {
+      this.pendingFetch = undefined
     }
   }
 
@@ -64,30 +69,18 @@ export class YadioConverter {
    * @param to - The target currency code (e.g., 'USD', 'BTC').
    * @returns The converted amount, or NaN if rates are missing.
    */
-  convertCurrency(amount: number, from: string, to: string): number {
+  async convertCurrency(amount: number, from: string, to: string): Promise<number> {
+    await this.ensureRatesLoaded()
+
     const fromRate = this.rates[from]
     const toRate = this.rates[to]
+
     if (typeof fromRate !== 'number' || typeof toRate !== 'number') {
       return NaN
     }
+
     const usdAmount = amount / fromRate
     return usdAmount * toRate
-  }
-
-  /**
-   * Same as convertCurrency but waits until rates are available.
-   *
-   * @param amount - The amount to convert.
-   * @param from - The source currency code.
-   * @param to - The target currency code.
-   * @returns The converted amount, or NaN if rates couldn't be loaded.
-   */
-  async convertCurrencyAsync(amount: number, from: string, to: string): Promise<number> {
-    if (!this.ready && this.pendingReady) {
-      await this.pendingReady
-    }
-
-    return this.convertCurrency(amount, from, to)
   }
 
   /**
