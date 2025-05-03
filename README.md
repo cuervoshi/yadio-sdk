@@ -73,3 +73,10 @@ const result = await converter.convertCurrency(100, 'ARS', 'EUR')
 // Get all cached rates
 const rates = converter.getRates()
 ```
+
+## Supported Currencies
+
+Yadio currently supports a wide range of fiat and crypto currencies such as USD, EUR, ARS, BTC, and many more.
+You can find the full list of supported currencies [in this file](./SUPPORTED_CURRENCIES.md).
+
+> ⚠️ This list may become outdated. To get the most accurate and up-to-date currencies, use `YadioAPI.getCurrencies()` at runtime.
