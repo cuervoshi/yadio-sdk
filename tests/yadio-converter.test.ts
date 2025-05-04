@@ -9,8 +9,8 @@ describe('YadioConverter', () => {
   })
 
   it('should convert between currencies using cached rates', async () => {
-    const usdToEur = await converter.convertCurrency(100, 'USD', 'EUR')
-    const eurToUsd = await converter.convertCurrency(100, 'EUR', 'USD')
+    const usdToEur = await converter.convertCurrency({ amount: 100, from: 'USD', to: 'EUR' })
+    const eurToUsd = await converter.convertCurrency({ amount: 100, from: 'EUR', to: 'USD' })
 
     const rates = converter.getRates()
     const eurRate = rates['EUR']!

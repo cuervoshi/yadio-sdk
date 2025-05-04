@@ -4,6 +4,12 @@ interface CachedRates {
   [currency: string]: number
 }
 
+interface ConvertCurrencyParams {
+  amount: number
+  from: string
+  to: string
+}
+
 /**
  * A currency converter that uses Yadio's exchange rates with a configurable base currency.
  * Rates are fetched on demand and stored in memory for offline conversions.
@@ -63,12 +69,10 @@ export class YadioConverter {
    * Converts an amount from one currency to another using cached exchange rates.
    * All conversions are routed through the configured base currency.
    *
-   * @param amount - The amount to convert.
-   * @param from - The source currency code (e.g., 'ARS', 'EUR').
-   * @param to - The target currency code (e.g., 'USD', 'BTC').
+   * @param params - The conversion parameters: amount, source currency, and target currency.
    * @returns The converted amount, or NaN if rates are missing.
    */
-  async convertCurrency(amount: number, from: string, to: string): Promise<number> {
+  async convertCurrency({ amount, from, to }: ConvertCurrencyParams): Promise<number> {
     await this.ensureRatesLoaded()
 
     const fromRate = this.rates[from]

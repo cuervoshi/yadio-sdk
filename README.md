@@ -49,30 +49,27 @@ const api = new YadioAPI()
 
 A currency converter that uses cached exchange rates and lazy refresh logic based on the last access time.
 
-### Initialization
+### Features
+
+* Fetches rates from `/exrates/{base}`
+* Automatically refreshes when cache expires
+* Uses base currency (e.g., USD, EUR) to convert between any two others
+
+### Usage
 
 ```ts
 import { YadioConverter } from 'yadio-sdk'
 
 // Base currency is optional (default is 'USD'), refreshInterval is optional (default is 60_000 ms)
-const converter = new YadioConverter('EUR', 120_000) // base currency: EUR, refresh every 2 minutes
-```
+const converter = new YadioConverter('EUR', 120_000)
 
-### Features
-
-- Fetches rates from `/exrates/{base}`
-- Automatically refreshes when cache expires
-- Uses base currency (e.g., USD, EUR) to convert between any two others
-
-### Usage
-
-```ts
-// Convert 100 ARS to EUR
-const result = await converter.convertCurrency(100, 'ARS', 'EUR')
+// Convert 1.000 ARS to BTC
+const result = await converter.convertCurrency({ amount: 1000, from: 'ARS', to: 'BTC' })
 
 // Get all cached rates
 const rates = converter.getRates()
 ```
+
 
 ## Supported Currencies
 
