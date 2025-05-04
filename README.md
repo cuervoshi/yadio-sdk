@@ -31,17 +31,17 @@ const api = new YadioAPI()
 
 ### Methods
 
-- `ping(): Promise<string>` — Check if the API is alive.
-- `getExchangeRates(base?: string): Promise<ExchangeRatesResponse>` — Get exchange rates using optional base.
-- `convert(amount, source, target): Promise<ConvertResponse>` — Convert a currency amount.
-- `getRate(quote, base): Promise<CurrencyRateResponse>` — Get the exchange rate between two currencies.
-- `getCurrencies(): Promise<string[]>` — Get all supported currency codes.
-- `getExchanges(): Promise<string[]>` — Get supported exchanges.
-- `getToday(range, currency): Promise<any>` — Get today’s price data for a currency.
-- `getHistory(range, currency): Promise<any>` — Get historical price data.
-- `getComparison(range, currency): Promise<any>` — Compare past and current prices.
-- `getMarketAds(currency, side, limit?): Promise<MarketAd[]>` — Get market ads.
-- `getMarketStats(currency, side): Promise<MarketStats>` — Get stats for market ads.
+- `ping()` — Check if the API is alive.
+- `getExchangeRates(base?: string)` — Get exchange rates using optional base.
+- `convert(amount, source, target)` — Convert a currency amount.
+- `getRate(quote, base)` — Get the exchange rate between two currencies.
+- `getCurrencies()` — Get all supported currency codes.
+- `getExchanges()` — Get supported exchanges.
+- `getToday(range, currency)` — Get today’s price data for a currency.
+- `getHistory(range, currency)` — Get historical price data.
+- `getComparison(range, currency)` — Compare past and current prices.
+- `getMarketAds(currency, side, limit?)` — Get market ads.
+- `getMarketStats(currency, side)` — Get stats for market ads.
 
 ---
 
